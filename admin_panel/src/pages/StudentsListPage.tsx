@@ -47,7 +47,8 @@ export default function StudentsListPage() {
       s.name.toLowerCase().includes(search.toLowerCase()) ||
       s.emailId.toLowerCase().includes(search.toLowerCase()) ||
       s.branch.toLowerCase().includes(search.toLowerCase()) ||
-      s.username.toLowerCase().includes(search.toLowerCase())
+      s.username.toLowerCase().includes(search.toLowerCase()) ||
+      s.graduationYear.includes(search.toLowerCase())
   );
 
   return (

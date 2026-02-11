@@ -73,7 +73,8 @@ export default function JobApprovalPage() {
     (j) =>
       j.title.toLowerCase().includes(search.toLowerCase()) ||
       j.company.toLowerCase().includes(search.toLowerCase()) ||
-      j.postedBy.toLowerCase().includes(search.toLowerCase())
+      j.postedBy.toLowerCase().includes(search.toLowerCase()) ||
+      j.status.toLowerCase().includes(search.toLowerCase())
   );
 
   return (

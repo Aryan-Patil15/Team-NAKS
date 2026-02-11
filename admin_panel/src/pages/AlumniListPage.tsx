@@ -51,7 +51,8 @@ export default function AlumniListPage() {
       a.employerDetails.toLowerCase().includes(search.toLowerCase()) ||
       a.branch.toLowerCase().includes(search.toLowerCase()) ||
       a.currentCity.toLowerCase().includes(search.toLowerCase()) ||
-      a.designation.toLowerCase().includes(search.toLowerCase())
+      a.designation.toLowerCase().includes(search.toLowerCase()) ||
+      a.yearOfPassing.includes(search.toLowerCase())
   );
 
   return (

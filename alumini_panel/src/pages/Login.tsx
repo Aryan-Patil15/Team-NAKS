@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { GraduationCap, Lock, Mail, Loader2, Sparkles } from "lucide-react";
-import Cookies from "js-cookie";
+import * as Cookies from "js-cookie";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -24,7 +24,7 @@ export default function Login() {
       const alumniRef = collection(db, "alumini");
       const q = query(
         alumniRef, 
-        where("email", "==", email),
+        where("emailId", "==", email),
         where("password", "==", password) 
       );
       
