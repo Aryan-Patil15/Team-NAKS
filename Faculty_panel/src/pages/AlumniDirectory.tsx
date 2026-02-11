@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
-import { Search } from "lucide-react";
-import { Header } from "@/components/layout/Header";
+import { Search, Bell } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -11,9 +11,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { cn } from "@/lib/utils";
-
 import { db } from "@/lib/firebase";
 import { collection, getDocs } from "firebase/firestore";
 
@@ -88,10 +85,28 @@ export default function AluminiDirectory() {
 
   return (
     <div className="min-h-screen">
-      <Header
-        title="Alumni Directory"
-        subtitle="Faculty view of alumni records"
-      />
+      <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border/50 bg-background/80 backdrop-blur-xl px-6">
+      {/* Page Title */}
+      <div>
+        <h1 className="text-xl font-semibold text-foreground">Alumni Directory</h1>
+          <p className="text-sm text-muted-foreground">Faculty view of alumni records</p>
+      </div>
+
+      {/* Right Section */}
+      <div className="flex items-center gap-4">
+        {/* Notifications */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative text-muted-foreground hover:text-foreground transition-smooth"
+        >
+          <Bell className="h-5 w-5" />
+          <Badge className="absolute -right-1 -top-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-[10px] bg-primary text-primary-foreground border-0">
+            3
+          </Badge>
+        </Button>
+        </div>
+    </header>
 
       <div className="p-6 space-y-6">
         {/* Search */}

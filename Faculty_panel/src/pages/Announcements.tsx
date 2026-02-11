@@ -1,14 +1,13 @@
 import { useState, useEffect } from "react";
 import { 
   Plus, Briefcase, FlaskConical, MapPin, Trash2, 
-  Clock, CheckCircle2, Building2, Loader2 
+  Clock, CheckCircle2, Building2, Loader2, Bell, Search
 } from "lucide-react";
 import { db } from "@/lib/firebase";
 import { 
   collection, query, where, onSnapshot, addDoc, 
   deleteDoc, doc, getDoc, serverTimestamp, Timestamp 
 } from "firebase/firestore";
-import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -35,7 +34,7 @@ interface JobOpportunity {
   description: string;
   requirements: string;  
   type: OpportunityType;
-  status: "pending" | "approved";
+  status: "pending"|"rejected" | "approved";
   postedBy: string;
   postedByEmail: string;
   createdAt: Timestamp | null;
@@ -55,6 +54,7 @@ export default function JobsResearchPage() {
   const [opportunities, setOpportunities] = useState<JobOpportunity[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [searchTerm, setSearchTerm] = useState("");
   
   // State to hold resolved user info
   const [userProfile, setUserProfile] = useState<{ email: string; name: string } | null>(null);
@@ -186,9 +186,41 @@ export default function JobsResearchPage() {
     );
   }
 
+  const filteredOpportunities = opportunities.filter((item) => {
+    const term = searchTerm.toLowerCase();
+    return (
+      item.title.toLowerCase().includes(term) ||
+      item.company.toLowerCase().includes(term) ||
+      item.location.toLowerCase().includes(term) ||
+      item.type.toLowerCase().includes(term) ||
+      item.status.toLowerCase().includes(term)
+    );
+  });
+
   return (
     <div className="min-h-screen bg-slate-950">
-      <Header title="Jobs & Research" subtitle="Manage professional opportunities" />
+      <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border/50 bg-background/80 backdrop-blur-xl px-6">
+      {/* Page Title */}
+      <div>
+        <h1 className="text-xl font-semibold text-foreground">Jobs & Research</h1>
+          <p className="text-sm text-muted-foreground">Manage Professional Opportunities</p>
+      </div>
+
+      {/* Right Section */}
+      <div className="flex items-center gap-4">
+        {/* Notifications */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative text-muted-foreground hover:text-foreground transition-smooth"
+        >
+          <Bell className="h-5 w-5" />
+          <Badge className="absolute -right-1 -top-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-[10px] bg-primary text-primary-foreground border-0">
+            3
+          </Badge>
+        </Button>
+        </div>
+    </header>
       
       <div className="p-6 max-w-5xl mx-auto space-y-6">
         <div className="flex justify-between items-center">
@@ -240,10 +272,20 @@ export default function JobsResearchPage() {
           </Dialog>
         </div>
 
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+          <Input
+            placeholder="Search by title, company, location, or type..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 bg-white/5 border-white/10 text-white"
+          />
+        </div>
+
         <div className="grid gap-4">
           {loading ? (
             <div className="flex justify-center py-20"><Loader2 className="animate-spin h-8 w-8 text-blue-500" /></div>
-          ) : opportunities.map((item) => (
+          ) : filteredOpportunities.map((item) => (
             <div key={item.id} className="p-5 rounded-xl border border-white/10 bg-slate-900/50 flex justify-between group hover:border-blue-500/50 transition-all">
               <div className="flex gap-4">
                 <div className={cn("h-12 w-12 rounded-lg flex items-center justify-center border", item.type === "research" ? "bg-purple-500/10 text-purple-500 border-purple-500/20" : "bg-blue-500/10 text-blue-500 border-blue-500/20")}>
@@ -261,9 +303,17 @@ export default function JobsResearchPage() {
                 </div>
               </div>
               <div className="flex flex-col items-end gap-2">
-                <Badge className={cn("border-none", item.status === "pending" ? "bg-amber-500/10 text-amber-500" : "bg-green-500/10 text-green-500")}>
+                <Badge
+                  className={cn(
+                    "border-none capitalize",
+                    item.status === "pending" && "bg-amber-500/10 text-amber-500",
+                    item.status === "approved" && "bg-green-500/10 text-green-500",
+                    item.status === "rejected" && "bg-red-500/10 text-red-500"
+                  )}
+                >
                   {item.status}
                 </Badge>
+
                 <Button variant="ghost" size="icon" onClick={() => deleteDoc(doc(db, "job_opportunities", item.id))} className="opacity-0 group-hover:opacity-100 text-slate-500 hover:text-red-500 transition-all">
                   <Trash2 className="h-4 w-4" />
                 </Button>

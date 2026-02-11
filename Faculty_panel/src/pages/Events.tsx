@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { MapPin, Clock, Plus, X } from "lucide-react";
-import { Header } from "@/components/layout/Header";
+import { MapPin, Clock, Plus, X, Bell } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -43,6 +43,9 @@ export default function Events() {
   const [loading, setLoading] = useState(true);
   const [events, setEvents] = useState<Event[]>([]);
   const [open, setOpen] = useState(false);
+
+  /* 🔥 ADDED SEARCH STATE */
+  const [searchTerm, setSearchTerm] = useState("");
 
   const [name, setName] = useState("");
   const [date, setDate] = useState("");
@@ -106,15 +109,85 @@ export default function Events() {
     loadEvents();
   }
 
+  /* 🔥 FILTER LOGIC (ONLY ADDITION) */
+  const filteredEvents = events.filter((event) => {
+  const term = searchTerm.toLowerCase().trim();
+  if (!term) return true;
+
+  const eventDate = new Date(event.date);
+
+  const day = eventDate.getDate().toString();
+  const monthShort = eventDate.toLocaleDateString("en-US", { month: "short" }).toLowerCase();
+  const monthFull = eventDate.toLocaleDateString("en-US", { month: "long" }).toLowerCase();
+  const year = eventDate.getFullYear().toString();
+  const time = event.time.toLowerCase();
+
+  // Build common date formats
+  const formats = [
+    `${day} ${monthShort}`,
+    `${monthShort} ${day}`,
+    `${day} ${monthFull}`,
+    `${monthFull} ${day}`,
+    `${monthShort} ${year}`,
+    `${monthFull} ${year}`,
+    `${day} ${monthShort} ${year}`,
+    `${day} ${monthFull} ${year}`,
+    `${monthShort} ${day} ${year}`,
+    `${monthFull} ${day} ${year}`,
+  ].map(f => f.toLowerCase());
+
+  return (
+    event.title.toLowerCase().includes(term) ||
+    event.location.toLowerCase().includes(term) ||
+    monthShort.includes(term) ||
+    monthFull.includes(term) ||
+    year.includes(term) ||
+    day === term ||
+    time.includes(term) ||
+    formats.some(format => format.includes(term))
+  );
+});
+
+
   return (
     <div className="min-h-screen">
-      <Header title="Events" subtitle="Upcoming and past events" />
+      <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border/50 bg-background/80 backdrop-blur-xl px-6">
+        <div>
+          <h1 className="text-xl font-semibold text-foreground">Events</h1>
+          <p className="text-sm text-muted-foreground">
+            Upcoming and past events
+          </p>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="relative text-muted-foreground hover:text-foreground transition-smooth"
+          >
+            <Bell className="h-5 w-5" />
+            <Badge className="absolute -right-1 -top-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-[10px] bg-primary text-primary-foreground border-0">
+              3
+            </Badge>
+          </Button>
+        </div>
+      </header>
 
       <div className="p-6 space-y-6">
+
+        {/* 🔥 SEARCH INPUT (ONLY ADDITION) */}
+        <Input
+          placeholder="Search events by name or location..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {loading
-            ? Array.from({ length: 4 }).map((_, i) => <EventSkeleton key={i} />)
-            : events.map((event, index) => (
+            ? Array.from({ length: 4 }).map((_, i) => (
+                <EventSkeleton key={i} />
+              ))
+            : filteredEvents.map((event, index) => (
                 <div
                   key={event.id}
                   className={cn(
@@ -159,7 +232,7 @@ export default function Events() {
         </div>
       </div>
 
-      {/* ADD EVENT MODAL */}
+      {/* ADD EVENT MODAL (UNCHANGED) */}
       {open && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="glass p-6 rounded-xl w-full max-w-xl space-y-4">
@@ -168,10 +241,18 @@ export default function Events() {
               <X onClick={() => setOpen(false)} className="cursor-pointer" />
             </div>
 
-            <Input placeholder="Event Name *" value={name} onChange={(e) => setName(e.target.value)} />
+            <Input
+              placeholder="Event Name *"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
 
             <div className="grid grid-cols-2 gap-3">
-              <Input type="datetime-local" value={date} onChange={(e) => setDate(e.target.value)} />
+              <Input
+                type="datetime-local"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+              />
 
               <Select value={category} onValueChange={setCategory}>
                 <SelectTrigger>
@@ -186,7 +267,11 @@ export default function Events() {
               </Select>
             </div>
 
-            <Input placeholder="Location / Venue *" value={venue} onChange={(e) => setVenue(e.target.value)} />
+            <Input
+              placeholder="Location / Venue *"
+              value={venue}
+              onChange={(e) => setVenue(e.target.value)}
+            />
 
             <Input
               type="number"
@@ -195,7 +280,11 @@ export default function Events() {
               onChange={(e) => setFee(Number(e.target.value))}
             />
 
-            <Textarea placeholder="Details" value={description} onChange={(e) => setDescription(e.target.value)} />
+            <Textarea
+              placeholder="Details"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
 
             <Button className="w-full" onClick={addEvent}>
               Publish Event
